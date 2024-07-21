@@ -6,26 +6,32 @@ import json
 import yaml
 import jinja2
 
-# Load settings file
+# Load the YAML configuration file
 with open("DockerSettings.yaml", 'r') as yaml_file:
-	yaml_data = yaml.safe_load(yaml_file)
+    yaml_data = yaml.safe_load(yaml_file)
 
+# Configure Jinja2 environment for template rendering
 settings_env = jinja2.Environment(
-	loader=jinja2.FileSystemLoader(os.getcwd()),
+    loader=jinja2.FileSystemLoader(os.getcwd()),
 )
+# Load and render the YAML template with Jinja2 using the loaded configuration
 settings_yaml = yaml.safe_load(settings_env.get_template("DockerSettings.yaml").render(yaml_data))
 
+# Setup the command-line argument parser
 args_parser = argparse.ArgumentParser()
 args_parser.add_argument('template_file', help='Jinja2 template file to render.')
 args_parser.add_argument('render_vars', help='JSON-encoded data to pass to the templating engine.')
 cli_args = args_parser.parse_args()
 
-# Merge the default config yaml with the json arguments given.
+# Merge the default YAML configuration with the provided JSON arguments
 render_vars = json.loads(cli_args.render_vars)
 settings_yaml.update(render_vars)
 
+# Configure the Jinja2 environment to render the specified template file
 environment = jinja2.Environment(
-	loader=jinja2.FileSystemLoader(os.getcwd()),
-	trim_blocks=True,
+    loader=jinja2.FileSystemLoader(os.getcwd()),
+    trim_blocks=True,
 )
+
+# Render the template using the merged settings and output the result
 print(environment.get_template(cli_args.template_file).render(settings_yaml))
